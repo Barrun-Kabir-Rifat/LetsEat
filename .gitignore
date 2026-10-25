@@ -1,0 +1,21 @@
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Build outputs
+/bin/
+/dist/
+*.exe
+*.test
+
+# Coverage
+coverage.out
+coverage.html
+
+# IDE files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
