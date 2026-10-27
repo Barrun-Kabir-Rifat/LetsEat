@@ -1,0 +1,66 @@
+package handlers
+
+import (
+	"context"
+	"errors"
+	"net/http"
+
+	"github.com/Barrun-Kabir-Rifat/letseat/internal/models"
+	"github.com/Barrun-Kabir-Rifat/letseat/internal/services"
+	"github.com/labstack/echo/v4"
+)
+
+type RestaurantHandler struct {
+	Service *services.RestaurantService
+}
+
+func NewRestaurantHandler(
+	service *services.RestaurantService,
+) *RestaurantHandler {
+	return &RestaurantHandler{Service: service}
+}
+
+func (h *RestaurantHandler) Create(c echo.Context) error {
+	var restaurant models.Restaurant
+
+	if err := c.Bind(&restaurant); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid request body",
+		})
+	}
+
+	if err := h.Service.Create(c.Request().Context(), &restaurant); err != nil {
+		if errors.Is(err, context.Canceled) {
+			return err
+		}
+
+		if err.Error() == "restaurant name is required" ||
+			err.Error() == "restaurant address is required" {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error": err.Error(),
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to create restaurant",
+		})
+	}
+
+	return c.JSON(http.StatusCreated, map[string]interface{}{
+		"message": "restaurant created successfully",
+		"data":    restaurant,
+	})
+}
+
+func (h *RestaurantHandler) GetAll(c echo.Context) error {
+	restaurants, err := h.Service.GetAll(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to retrieve restaurants",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": restaurants,
+	})
+}
