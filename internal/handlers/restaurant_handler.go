@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/models"
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/services"
@@ -62,5 +63,31 @@ func (h *RestaurantHandler) GetAll(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": restaurants,
+	})
+}
+
+func (h *RestaurantHandler) GetByID(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid restaurant ID",
+		})
+	}
+
+	restaurant, err := h.Service.GetByID(c.Request().Context(), id)
+	if err != nil {
+		if errors.Is(err, services.ErrRestaurantNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "restaurant not found",
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to retrieve restaurant",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": restaurant,
 	})
 }

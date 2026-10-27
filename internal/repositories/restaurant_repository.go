@@ -86,3 +86,33 @@ func (r *RestaurantRepository) GetAll(
 
 	return restaurants, nil
 }
+
+func (r *RestaurantRepository) GetByID(
+	ctx context.Context,
+	id int64,
+) (*models.Restaurant, error) {
+	query := `
+        SELECT id, name, address, phone, description,
+               is_active, created_at, updated_at
+        FROM restaurants
+        WHERE id = $1
+    `
+
+	var restaurant models.Restaurant
+
+	err := r.DB.QueryRow(ctx, query, id).Scan(
+		&restaurant.ID,
+		&restaurant.Name,
+		&restaurant.Address,
+		&restaurant.Phone,
+		&restaurant.Description,
+		&restaurant.IsActive,
+		&restaurant.CreatedAt,
+		&restaurant.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &restaurant, nil
+}

@@ -26,6 +26,7 @@ func main() {
 
 	e.POST("/api/v1/restaurants", restaurantHandler.Create)
 	e.GET("/api/v1/restaurants", restaurantHandler.GetAll)
+	e.GET("/api/v1/restaurants/:id", restaurantHandler.GetByID)
 
 	e.GET("/api/v1/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
