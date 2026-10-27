@@ -116,3 +116,31 @@ func (r *RestaurantRepository) GetByID(
 
 	return &restaurant, nil
 }
+
+func (r *RestaurantRepository) Update(
+	ctx context.Context,
+	restaurant *models.Restaurant,
+) error {
+	query := `
+        UPDATE restaurants
+        SET name = $1,
+            address = $2,
+            phone = $3,
+            description = $4,
+            is_active = $5,
+            updated_at = NOW()
+        WHERE id = $6
+        RETURNING updated_at
+    `
+
+	return r.DB.QueryRow(
+		ctx,
+		query,
+		restaurant.Name,
+		restaurant.Address,
+		restaurant.Phone,
+		restaurant.Description,
+		restaurant.IsActive,
+		restaurant.ID,
+	).Scan(&restaurant.UpdatedAt)
+}

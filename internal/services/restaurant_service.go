@@ -61,3 +61,35 @@ func (s *RestaurantService) GetByID(
 
 	return restaurant, nil
 }
+
+func (s *RestaurantService) Update(
+	ctx context.Context,
+	restaurant *models.Restaurant,
+) error {
+	restaurant.Name = strings.TrimSpace(restaurant.Name)
+	restaurant.Address = strings.TrimSpace(restaurant.Address)
+
+	if restaurant.Name == "" {
+		return errors.New("restaurant name is required")
+	}
+
+	if restaurant.Address == "" {
+		return errors.New("restaurant address is required")
+	}
+
+	if restaurant.ID <= 0 {
+		return errors.New("invalid restaurant ID")
+	}
+
+	err := s.Repository.Update(ctx, restaurant)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrRestaurantNotFound
+		}
+
+		return err
+	}
+
+	return nil
+
+}

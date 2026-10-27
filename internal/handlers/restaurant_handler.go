@@ -91,3 +91,46 @@ func (h *RestaurantHandler) GetByID(c echo.Context) error {
 		"data": restaurant,
 	})
 }
+
+func (h *RestaurantHandler) Update(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid restaurant ID",
+		})
+	}
+
+	var restaurant models.Restaurant
+
+	if err := c.Bind(&restaurant); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid request body",
+		})
+	}
+
+	restaurant.ID = id
+
+	if err := h.Service.Update(c.Request().Context(), &restaurant); err != nil {
+		if errors.Is(err, services.ErrRestaurantNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "restaurant not found",
+			})
+		}
+
+		if err.Error() == "restaurant name is required" ||
+			err.Error() == "restaurant address is required" {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error": err.Error(),
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to update restaurant",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "restaurant updated successfully",
+		"data":    restaurant,
+	})
+}
