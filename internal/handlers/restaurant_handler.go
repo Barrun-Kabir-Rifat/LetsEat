@@ -134,3 +134,27 @@ func (h *RestaurantHandler) Update(c echo.Context) error {
 		"data":    restaurant,
 	})
 }
+
+func (h *RestaurantHandler) Delete(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid restaurant ID",
+		})
+	}
+
+	err = h.Service.Delete(c.Request().Context(), id)
+	if err != nil {
+		if errors.Is(err, services.ErrRestaurantNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "restaurant not found",
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to delete restaurant",
+		})
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}

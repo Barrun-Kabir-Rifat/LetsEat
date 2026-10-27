@@ -144,3 +144,23 @@ func (r *RestaurantRepository) Update(
 		restaurant.ID,
 	).Scan(&restaurant.UpdatedAt)
 }
+
+func (r *RestaurantRepository) Delete(
+	ctx context.Context,
+	id int64,
+) error {
+	query := `
+        DELETE FROM restaurants
+        WHERE id = $1
+        RETURNING id
+    `
+
+	var deletedID int64
+
+	err := r.DB.QueryRow(ctx, query, id).Scan(&deletedID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

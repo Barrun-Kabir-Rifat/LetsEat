@@ -93,3 +93,23 @@ func (s *RestaurantService) Update(
 	return nil
 
 }
+
+func (s *RestaurantService) Delete(
+	ctx context.Context,
+	id int64,
+) error {
+	if id <= 0 {
+		return errors.New("invalid restaurant ID")
+	}
+
+	err := s.Repository.Delete(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrRestaurantNotFound
+		}
+
+		return err
+	}
+
+	return nil
+}
