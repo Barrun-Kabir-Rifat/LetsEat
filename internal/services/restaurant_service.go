@@ -110,6 +110,6 @@ func (s *RestaurantService) Delete(
 
 		return err
 	}
-
 	return nil
 }
+
