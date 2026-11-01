@@ -26,7 +26,9 @@ func main() {
 
 	e.POST("/api/v1/restaurants", restaurantHandler.Create)
 	e.GET("/api/v1/restaurants", restaurantHandler.GetAll)
-	
+	e.GET("/api/v1/restaurants/:id", restaurantHandler.GetByID)
+	e.PUT("/api/v1/restaurants/:id", restaurantHandler.Update)
+	e.DELETE("/api/v1/restaurants/:id", restaurantHandler.Delete)
 
 	
 

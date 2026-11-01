@@ -86,3 +86,81 @@ func (r *RestaurantRepository) GetAll(
 
 	return restaurants, nil
 }
+
+func (r *RestaurantRepository) GetByID(
+	ctx context.Context,
+	id int64,
+) (*models.Restaurant, error) {
+	query := `
+        SELECT id, name, address, phone, description,
+               is_active, created_at, updated_at
+        FROM restaurants
+        WHERE id = $1
+    `
+
+	var restaurant models.Restaurant
+
+	err := r.DB.QueryRow(ctx, query, id).Scan(
+		&restaurant.ID,
+		&restaurant.Name,
+		&restaurant.Address,
+		&restaurant.Phone,
+		&restaurant.Description,
+		&restaurant.IsActive,
+		&restaurant.CreatedAt,
+		&restaurant.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &restaurant, nil
+}
+
+func (r *RestaurantRepository) Update(
+	ctx context.Context,
+	restaurant *models.Restaurant,
+) error {
+	query := `
+        UPDATE restaurants
+        SET name = $1,
+            address = $2,
+            phone = $3,
+            description = $4,
+            is_active = $5,
+            updated_at = NOW()
+        WHERE id = $6
+        RETURNING updated_at
+    `
+
+	return r.DB.QueryRow(
+		ctx,
+		query,
+		restaurant.Name,
+		restaurant.Address,
+		restaurant.Phone,
+		restaurant.Description,
+		restaurant.IsActive,
+		restaurant.ID,
+	).Scan(&restaurant.UpdatedAt)
+}
+
+func (r *RestaurantRepository) Delete(
+	ctx context.Context,
+	id int64,
+) error {
+	query := `
+        DELETE FROM restaurants
+        WHERE id = $1
+        RETURNING id
+    `
+
+	var deletedID int64
+
+	err := r.DB.QueryRow(ctx, query, id).Scan(&deletedID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
