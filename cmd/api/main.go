@@ -30,13 +30,18 @@ func main() {
 	e.PUT("/api/v1/restaurants/:id", restaurantHandler.Update)
 	e.DELETE("/api/v1/restaurants/:id", restaurantHandler.Delete)
 
-	
-
 	categoryRepository := repositories.NewCategoryRepository(db)
 	categoryService := services.NewCategoryService(categoryRepository)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
+
+
+
 	e.POST("/api/v1/categories", categoryHandler.Create)
+	e.GET("/api/v1/categories", categoryHandler.GetAll)
+	e.GET("/api/v1/categories/:id", categoryHandler.GetByID	)
+	e.PUT("/api/v1/categories/:id", categoryHandler.Update)
+    e.DELETE("/api/v1/categories/:id", categoryHandler.Delete)
 
 	e.GET("/api/v1/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{

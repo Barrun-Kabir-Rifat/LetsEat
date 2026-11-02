@@ -112,4 +112,3 @@ func (s *RestaurantService) Delete(
 	}
 	return nil
 }
-
