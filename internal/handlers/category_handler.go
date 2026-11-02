@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/models"
 
@@ -54,5 +55,44 @@ func (h *CategoryHandler) Create(c echo.Context) error {
 	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"message": "category created successfully",
 		"data":    category,
+	})
+}
+
+func (h *CategoryHandler) GetAll(c echo.Context) error {
+	categories, err := h.Service.GetAll(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to retrieve categories",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": categories,
+	})
+}
+
+func (h *CategoryHandler) GetByID(c echo.Context) error {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid category ID",
+		})
+	}
+
+	category, err := h.Service.GetByID(c.Request().Context(), id)
+	if err != nil {
+		if errors.Is(err, services.ErrCategoryNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "category not found",
+			})
+		}
+
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to retrieve category",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": category,
 	})
 }

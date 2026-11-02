@@ -7,6 +7,7 @@ import (
 
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/models"
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/repositories"
+	"github.com/jackc/pgx/v5"
 )
 
 type CategoryService struct {
@@ -30,4 +31,28 @@ func (s *CategoryService) Create(
 	}
 
 	return s.Repository.Create(ctx, category)
+}
+
+func (s *CategoryService) GetAll(
+	ctx context.Context,
+) ([]models.Category, error) {
+	return s.Repository.GetAll(ctx)
+}
+
+var ErrCategoryNotFound = errors.New("category not found")
+
+func (s *CategoryService) GetByID(
+	ctx context.Context,
+	id int64,
+) (*models.Category, error) {
+	category, err := s.Repository.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrCategoryNotFound
+		}
+
+		return nil, err
+	}
+
+	return category, nil
 }
