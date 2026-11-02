@@ -56,3 +56,52 @@ func (s *CategoryService) GetByID(
 
 	return category, nil
 }
+
+
+
+func (s *CategoryService) Update(
+    ctx context.Context,
+    category *models.Category,
+) error {
+    category.Name = strings.TrimSpace(category.Name)
+
+    if category.ID <= 0 {
+        return errors.New("invalid category ID")
+    }
+
+    if category.Name == "" {
+        return errors.New("category name is required")
+    }
+
+    err := s.Repository.Update(ctx, category)
+    if err != nil {
+        if errors.Is(err, pgx.ErrNoRows) {
+            return ErrCategoryNotFound
+        }
+
+        return err
+    }
+
+    return nil
+}
+
+
+func (s *CategoryService) Delete(
+    ctx context.Context,
+    id int64,
+) error {
+    if id <= 0 {
+        return errors.New("invalid category ID")
+    }
+
+    err := s.Repository.Delete(ctx, id)
+    if err != nil {
+        if errors.Is(err, pgx.ErrNoRows) {
+            return ErrCategoryNotFound
+        }
+
+        return err
+    }
+
+    return nil
+}

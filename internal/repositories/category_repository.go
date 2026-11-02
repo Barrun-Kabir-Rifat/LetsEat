@@ -100,3 +100,40 @@ func (r *CategoryRepository) GetByID(
 
 	return &category, nil
 }
+
+
+
+func (r *CategoryRepository) Update(
+    ctx context.Context,
+    category *models.Category,
+) error {
+    query := `
+        UPDATE categories
+        SET name = $1,
+            updated_at = NOW()
+        WHERE id = $2
+        RETURNING updated_at
+    `
+
+    return r.DB.QueryRow(
+        ctx,
+        query,
+        category.Name,
+        category.ID,
+    ).Scan(&category.UpdatedAt)
+}
+
+func (r *CategoryRepository) Delete(
+    ctx context.Context,
+    id int64,
+) error {
+    query := `
+        DELETE FROM categories
+        WHERE id = $1
+        RETURNING id
+    `
+
+    var deletedID int64
+
+    return r.DB.QueryRow(ctx, query, id).Scan(&deletedID)
+}
