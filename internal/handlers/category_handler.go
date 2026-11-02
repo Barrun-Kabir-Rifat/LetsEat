@@ -15,10 +15,10 @@ import (
 )
 
 func isCategoryInUse(err error) bool {
-    var pgErr *pgconn.PgError
+	var pgErr *pgconn.PgError
 
-    return errors.As(err, &pgErr) &&
-        pgErr.Code == "23503"
+	return errors.As(err, &pgErr) &&
+		pgErr.Code == "23503"
 }
 
 type CategoryHandler struct {
@@ -106,85 +106,80 @@ func (h *CategoryHandler) GetByID(c echo.Context) error {
 	})
 }
 
-
-
 func (h *CategoryHandler) Update(c echo.Context) error {
-    id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-    if err != nil || id <= 0 {
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": "invalid category ID",
-        })
-    }
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid category ID",
+		})
+	}
 
-    var request struct {
-        Name string `json:"name"`
-    }
+	var request struct {
+		Name string `json:"name"`
+	}
 
-    if err := c.Bind(&request); err != nil {
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": "invalid request body",
-        })
-    }
+	if err := c.Bind(&request); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid request body",
+		})
+	}
 
-    category := &models.Category{
-        ID:   id,
-        Name: request.Name,
-    }
+	category := &models.Category{
+		ID:   id,
+		Name: request.Name,
+	}
 
-    err = h.Service.Update(c.Request().Context(), category)
-    if err != nil {
-        if errors.Is(err, services.ErrCategoryNotFound) {
-            return c.JSON(http.StatusNotFound, map[string]string{
-                "error": "category not found",
-            })
-        }
+	err = h.Service.Update(c.Request().Context(), category)
+	if err != nil {
+		if errors.Is(err, services.ErrCategoryNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "category not found",
+			})
+		}
 
-        if err.Error() == "category name is required" {
-            return c.JSON(http.StatusBadRequest, map[string]string{
-                "error": err.Error(),
-            })
-        }
+		if err.Error() == "category name is required" {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error": err.Error(),
+			})
+		}
 
-        return c.JSON(http.StatusInternalServerError, map[string]string{
-            "error": "failed to update category",
-        })
-    }
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to update category",
+		})
+	}
 
-    return c.JSON(http.StatusOK, map[string]interface{}{
-        "message": "category updated successfully",
-        "data":    category,
-    })
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "category updated successfully",
+		"data":    category,
+	})
 }
-
-
 
 func (h *CategoryHandler) Delete(c echo.Context) error {
-    id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-    if err != nil || id <= 0 {
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": "invalid category ID",
-        })
-    }
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || id <= 0 {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid category ID",
+		})
+	}
 
-    err = h.Service.Delete(c.Request().Context(), id)
-    if err != nil {
-        if errors.Is(err, services.ErrCategoryNotFound) {
-            return c.JSON(http.StatusNotFound, map[string]string{
-                "error": "category not found",
-            })
-        }
+	err = h.Service.Delete(c.Request().Context(), id)
+	if err != nil {
+		if errors.Is(err, services.ErrCategoryNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "category not found",
+			})
+		}
 
-        if isCategoryInUse(err) {
-            return c.JSON(http.StatusConflict, map[string]string{
-                "error": "category cannot be deleted because menu items are using it",
-            })
-        }
+		if isCategoryInUse(err) {
+			return c.JSON(http.StatusConflict, map[string]string{
+				"error": "category cannot be deleted because menu items are using it",
+			})
+		}
 
-        return c.JSON(http.StatusInternalServerError, map[string]string{
-            "error": "failed to delete category",
-        })
-    }
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to delete category",
+		})
+	}
 
-    return c.NoContent(http.StatusNoContent)
+	return c.NoContent(http.StatusNoContent)
 }
-
