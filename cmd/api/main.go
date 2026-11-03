@@ -42,11 +42,9 @@ func main() {
 
 	menuItemRepository := repositories.NewMenuItemRepository(db)
 
-	menuItemService := services.NewMenuItemService(
-		menuItemRepository)
+	menuItemService := services.NewMenuItemService(menuItemRepository)
 
-	menuItemHandler := handlers.NewMenuItemHandler(
-		menuItemService)
+	menuItemHandler := handlers.NewMenuItemHandler(menuItemService)
 
 	e.POST("/api/v1/restaurants/:id/menu-items", menuItemHandler.Create)
 	e.GET("/api/v1/restaurants/:id/menu-items", menuItemHandler.GetAllByRestaurantID)
