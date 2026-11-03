@@ -42,11 +42,9 @@ func main() {
 
 	menuItemRepository := repositories.NewMenuItemRepository(db)
 
-	menuItemService := services.NewMenuItemService(
-		menuItemRepository)
+	menuItemService := services.NewMenuItemService(menuItemRepository)
 
-	menuItemHandler := handlers.NewMenuItemHandler(
-		menuItemService)
+	menuItemHandler := handlers.NewMenuItemHandler(menuItemService)
 
 	e.POST("/api/v1/restaurants/:id/menu-items", menuItemHandler.Create)
 	e.GET("/api/v1/restaurants/:id/menu-items", menuItemHandler.GetAllByRestaurantID)
@@ -60,6 +58,14 @@ func main() {
 	e.PATCH("/api/v1/menu-items/:id/availability", menuItemHandler.UpdateAvailability)
 
 	e.DELETE("/api/v1/menu-items/:id", menuItemHandler.Delete)
+
+	searchRepository := repositories.NewSearchRepository(db)
+	searchService := services.NewSearchService(searchRepository)
+	searchHandler := handlers.NewSearchHandler(searchService)
+
+	e.GET("/api/v1/restaurants/search", searchHandler.SearchRestaurants)
+
+	e.GET("/api/v1/menu-items/search", searchHandler.SearchMenuItems)
 
 	e.GET("/api/v1/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
