@@ -59,6 +59,14 @@ func main() {
 
 	e.DELETE("/api/v1/menu-items/:id", menuItemHandler.Delete)
 
+	searchRepository := repositories.NewSearchRepository(db)
+	searchService := services.NewSearchService(searchRepository)
+	searchHandler := handlers.NewSearchHandler(searchService)
+
+	e.GET("/api/v1/restaurants/search", searchHandler.SearchRestaurants)
+
+	e.GET("/api/v1/menu-items/search", searchHandler.SearchMenuItems)
+
 	e.GET("/api/v1/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
 			"status":  "success",
