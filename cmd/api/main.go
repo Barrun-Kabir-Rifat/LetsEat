@@ -41,9 +41,7 @@ func main() {
 	e.DELETE("/api/v1/categories/:id", categoryHandler.Delete)
 
 	menuItemRepository := repositories.NewMenuItemRepository(db)
-
 	menuItemService := services.NewMenuItemService(menuItemRepository)
-
 	menuItemHandler := handlers.NewMenuItemHandler(menuItemService)
 
 	e.POST("/api/v1/restaurants/:id/menu-items", menuItemHandler.Create)
