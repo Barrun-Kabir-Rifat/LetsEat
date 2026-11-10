@@ -3,13 +3,39 @@ package main
 import (
 	"log"
 	"net/http"
+	"crypto/subtle"
+    "os"
 
+    
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/database"
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/handlers"
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/repositories"
 	"github.com/Barrun-Kabir-Rifat/letseat/internal/services"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
+
+
+func basicAuthMiddleware(e *echo.Echo) {
+
+    username := os.Getenv("API_USERNAME")
+    password := os.Getenv("API_PASSWORD")
+
+    e.Use(middleware.BasicAuth(func(user, pass string, c echo.Context) (bool, error) {
+
+        usernameMatch := subtle.ConstantTimeCompare(
+            []byte(user),
+            []byte(username),
+        )
+
+        passwordMatch := subtle.ConstantTimeCompare(
+            []byte(pass),
+            []byte(password),
+        )
+
+        return usernameMatch == 1 && passwordMatch == 1, nil
+    }))
+}
 
 func main() {
 	db, err := database.Connect()
@@ -19,6 +45,8 @@ func main() {
 	defer db.Close()
 
 	e := echo.New()
+	basicAuthMiddleware(e)
+
 
 	restaurantRepository := repositories.NewRestaurantRepository(db)
 	restaurantService := services.NewRestaurantService(restaurantRepository)

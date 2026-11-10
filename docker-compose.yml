@@ -35,6 +35,9 @@ services:
       DB_NAME: ${DB_NAME:?Set DB_NAME in .env}
       DB_SSLMODE: ${DB_SSLMODE:-disable}
       SERVER_PORT: ${SERVER_PORT:-8080}
+      API_USERNAME: ${API_USERNAME:?Set API_USERNAME in .env}
+      API_PASSWORD: ${API_PASSWORD:?Set API_PASSWORD in .env}
+
 
     ports:
       - "127.0.0.1:${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
