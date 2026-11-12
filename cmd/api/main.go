@@ -3,7 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
-
+	"flag"
+	"fmt"
 	//"crypto/subtle"
 	"os"
 
@@ -20,7 +21,21 @@ import (
 
 func main() {
 
+	
+
+    port := flag.Int("port", 8080, "Port number for the API server")
+
+    flag.Parse()
+
+	if *port < 1 || *port > 65535 {
+    log.Fatal("Invalid port: must be between 1 and 65535")
+	}
+
 	db, err := database.Connect()
+	if err != nil {
+		log.Fatal("Database connection failed: ", err)
+	}
+	defer db.Close()
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 
@@ -55,10 +70,7 @@ func main() {
 		middleware.JWTAuth(jwtSecret, adminRepo),
 	)
 
-	if err != nil {
-		log.Fatal("Database connection failed: ", err)
-	}
-	defer db.Close()
+	
 	//basicAuthMiddleware(e)
 
 	restaurantRepository := repositories.NewRestaurantRepository(db)
@@ -113,8 +125,13 @@ func main() {
 		})
 	})
 
-	if err := e.Start(":8080"); err != nil &&
-		err != http.ErrServerClosed {
-		log.Fatal("API server failed: ", err)
-	}
+	 // Start Server Using CLI Port
+    address := fmt.Sprintf(":%d", *port)
+
+    log.Printf("LetsEat API starting on port %d", *port)
+
+    if err := e.Start(address); err != nil &&
+        err != http.ErrServerClosed {
+        log.Fatal("API server failed: ", err)
+    }
 }

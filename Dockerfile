@@ -13,6 +13,7 @@ FROM debian:bookworm-slim
 COPY --from=build /out/letseat-api /usr/local/bin/letseat-api
 
 ENTRYPOINT ["/usr/local/bin/letseat-api"]
+CMD ["--port=8080"]
 
 
 
